@@ -89,20 +89,27 @@ router.get('/', (req, res) => {
  *                .then(res => console.log(res.data));
  */
 router.post('/', (req, res) => {
-  const { nombre } = req.body;
-  if (!nombre) return res.status(400).json({ error: 'Nombre es requerido' });
+  const { nombre, correo } = req.body;
 
-  db.query('INSERT INTO usuarios (nombre) VALUES (?)', [nombre], (err, resultado) => {
-    if (err) {
-      console.error('❌ Error al insertar usuario:', err.message);
-      return res.status(500).json({ error: 'Error al crear usuario' });
+  if (!nombre || !correo) {
+    return res.status(400).json({ error: 'Nombre y correo son requeridos' });
+  }
+
+  db.query(
+    'INSERT INTO usuarios (nombre, correo) VALUES (?, ?)',
+    [nombre, correo],
+    (err, resultado) => {
+      if (err) {
+        console.error('❌ Error al insertar usuario:', err.message);
+        return res.status(500).json({ error: 'Error al crear usuario' });
+      }
+
+      res.status(201).json({
+        mensaje: 'Usuario creado',
+        usuario: { id: resultado.insertId, nombre, correo }
+      });
     }
-
-    res.status(201).json({
-      mensaje: 'Usuario creado',
-      usuario: { id: resultado.insertId, nombre }
-    });
-  });
+  );
 });
 
 /**
