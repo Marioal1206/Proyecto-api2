@@ -34,7 +34,13 @@ const router = express.Router();
  */
 
 router.get('/', (req, res) => {
-  res.json([{ id: 1, nombre: 'Mario' }]);
+  db.query('SELECT * FROM usuarios', (err, resultados) => {
+    if (err) {
+      console.error('❌ Error en la consulta:', err.message);
+      return res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+    res.json(resultados);
+  });
 });
 
 /**
@@ -83,7 +89,20 @@ router.get('/', (req, res) => {
  *                .then(res => console.log(res.data));
  */
 router.post('/', (req, res) => {
-  res.status(201).json({ mensaje: 'Usuario creado', usuario: req.body });
+  const { nombre } = req.body;
+  if (!nombre) return res.status(400).json({ error: 'Nombre es requerido' });
+
+  db.query('INSERT INTO usuarios (nombre) VALUES (?)', [nombre], (err, resultado) => {
+    if (err) {
+      console.error('❌ Error al insertar usuario:', err.message);
+      return res.status(500).json({ error: 'Error al crear usuario' });
+    }
+
+    res.status(201).json({
+      mensaje: 'Usuario creado',
+      usuario: { id: resultado.insertId, nombre }
+    });
+  });
 });
 
 /**
@@ -124,8 +143,18 @@ router.post('/', (req, res) => {
  *                .then(res => console.log(res.data));
  */
 router.delete('/:id', (req, res) => {
-  res.json({ mensaje: `Usuario con ID ${req.params.id} eliminado.` });
+  const id = req.params.id;
+
+  db.query('DELETE FROM usuarios WHERE id = ?', [id], (err, resultado) => {
+    if (err) {
+      console.error('❌ Error al eliminar usuario:', err.message);
+      return res.status(500).json({ error: 'Error al eliminar usuario' });
+    }
+
+    res.json({ mensaje: `Usuario con ID ${id} eliminado.` });
+  });
 });
+
 
 /**
  * @swagger
@@ -181,10 +210,18 @@ router.delete('/:id', (req, res) => {
  */
 router.put('/:id', (req, res) => {
   const id = req.params.id;
-  const datosActualizados = req.body;
-  res.json({
-    mensaje: `Usuario con ID ${id} modificado.`,
-    usuario: { id, ...datosActualizados }
+  const { nombre } = req.body;
+
+  db.query('UPDATE usuarios SET nombre = ? WHERE id = ?', [nombre, id], (err, resultado) => {
+    if (err) {
+      console.error('❌ Error al actualizar usuario:', err.message);
+      return res.status(500).json({ error: 'Error al modificar usuario' });
+    }
+
+    res.json({
+      mensaje: `Usuario con ID ${id} modificado.`,
+      usuario: { id, nombre }
+    });
   });
 });
 
