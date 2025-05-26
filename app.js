@@ -13,6 +13,7 @@ app.use('/api/usuarios', usuariosRouter);
 app.get('/openapi.json', (req, res) => {
   res.json(specs);
 });
+console.log('Conectando a DB en:', process.env.DB_HOST);
 
 // Interfaz de documentación con RapiDoc
 app.get('/docs', (req, res) => {
