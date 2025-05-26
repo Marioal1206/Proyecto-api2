@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const specs = require('./swagger');
 const usuariosRouter = require('./routes/usuarios');
+require('dotenv').config();
 
 app.use(express.json());
 const puerto = 3000;
